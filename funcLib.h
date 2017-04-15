@@ -77,8 +77,8 @@ List(U) * project(T,U)(List(T) * list, U (f)(T)) { \
 }
 
 
-#define funcLibDefinition(T) \
-LinkedListDefinition(T) \
+#define funcLib(T) \
+LinkedListLib(T) \
 \
 deepCopyDefinition(T) \
 \

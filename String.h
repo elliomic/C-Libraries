@@ -3,7 +3,7 @@
 
 #include "funcLib.h"
 
-funcLibDefinition(char)
+funcLib(char)
 printListDefinition(char, "'%c'")
 
 #define String List(char)*

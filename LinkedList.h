@@ -128,11 +128,13 @@ void addIndex(T)(List(T) * list, int index, T thing) { \
 	list->size++; \
 }
 
+
 #define addLast(T) addLast##T
 #define addLastDefinition(T) \
 void addLast(T)(List(T) * list, T thing) { \
 	addIndex(T)(list, list->size, thing); \
 }
+
 
 #define getElementAt(T) getElementAt##T
 #define getElementAtDefinition(T) \
@@ -188,6 +190,7 @@ int indexOf(T)(List(T) * list, T thing) { \
 	return -1; \
 }
 
+
 #define printList(T) printList##T
 #define printListDefinition(T,P) \
 void printList(T)(List(T) * list) { \
@@ -207,7 +210,8 @@ void printList(T)(List(T) * list) { \
 	} \
 }
 
-#define LinkedListDefinition(T) \
+
+#define LinkedListLib(T)	\
 NodeDefinition(T) \
 \
 ListDefinition(T) \
@@ -241,5 +245,6 @@ removeIndexDefinition(T) \
 removeFirstDefinition(T) \
 \
 indexOfDefinition(T) \
+
 
 #endif
