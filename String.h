@@ -1,9 +1,9 @@
 #ifndef STRING_H
 #define STRING_H
 
-#include "funcLib.h"
+#include "ListUtility.h"
 
-funcLib(char)
+ListUtilityLib(char)
 printListDefinition(char, "'%c'")
 
 #define String List(char)*
