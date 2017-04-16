@@ -2,6 +2,7 @@
 #define ITERATORUTILITY_H
 
 #include "Iterator.h"
+#include "LinkedList.h"
 
 
 #define deepCopyIter(T) deepCopyIter##T
@@ -50,6 +51,10 @@ deepCopyIterDefinition(T) \
 headIterDefinition(T) \
 \
 tailIterDefinition(T) \
+\
+LinkedListLib(T) \
+\
+takeDefinition(T) \
 
 
 #endif

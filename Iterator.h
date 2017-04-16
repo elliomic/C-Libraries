@@ -1,7 +1,7 @@
 #ifndef ITERATOR_H
 #define ITERATOR_H
 
-#include "LinkedList.h"
+#include <stdlib.h>
 
 
 int inc(int x) { return x + 1; }
@@ -51,8 +51,6 @@ T nextIter(T)(Iterator(T) * iter) { \
 
 
 #define IteratorLib(T) \
-LinkedListLib(T) \
-\
 IteratorDefinition(T) \
 \
 identityDefinition(T) \
@@ -62,8 +60,6 @@ constructIteratorDefinition(T)	\
 currentIterDefinition(T) \
 \
 nextIterDefinition(T) \
-\
-takeDefinition(T) \
 
 
 #endif
