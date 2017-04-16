@@ -13,7 +13,15 @@ int dec(int x) { return x - 1; }
 typedef struct Iterator(T) { \
 	T current; \
 	T (*gen)(T); \
+	T (*trans)(T); \
 } Iterator(T);
+
+
+#define identity(T) identity##T
+#define identityDefinition(T) \
+T identity(T)(T e) { \
+	return e; \
+}
 
 
 #define constructIterator(T) constructIterator##T
@@ -22,31 +30,23 @@ Iterator(T) * constructIterator(T)(T start, T(*gen)(T) ) { \
 	Iterator(T) * iter = malloc(sizeof(Iterator(T))); \
 	iter->current = start; \
 	iter->gen = gen; \
+	iter->trans = *identity(T); \
 	return iter; \
 }
 
 
-#define next(T) next##T
-#define nextDefinition(T) \
-T next(T)(Iterator(T) * iter) { \
-	iter->current = iter->gen(iter->current); \
-	return iter->current; \
+#define currentIter(T) currentIter##T
+#define currentIterDefinition(T) \
+T currentIter(T)(Iterator(T) * iter) { \
+	return iter->trans(iter->current); \
 }
 
 
-#define take(T) take##T
-#define takeDefinition(T) \
-List(T) * take(T)(Iterator(T) * iter, int n) { \
-	List(T) * list = constructList(T)(); \
-	Node(T) * cur = list->head = constructNode(T)(iter->current, NULL); \
-\
-	while (list->size < n) { \
-		cur->next = constructNode(int)(next(T)(iter), NULL); \
-		cur = cur->next; \
-		list->size++; \
-	} \
-\
-	return list; \
+#define nextIter(T) nextIter##T
+#define nextIterDefinition(T) \
+T nextIter(T)(Iterator(T) * iter) { \
+	iter->current = iter->gen(iter->current); \
+	return iter->trans(iter->current); \
 }
 
 
@@ -55,9 +55,13 @@ LinkedListLib(T) \
 \
 IteratorDefinition(T) \
 \
+identityDefinition(T) \
+\
 constructIteratorDefinition(T)	\
 \
-nextDefinition(T) \
+currentIterDefinition(T) \
+\
+nextIterDefinition(T) \
 \
 takeDefinition(T) \
 

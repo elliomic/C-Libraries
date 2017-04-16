@@ -31,16 +31,16 @@ void printc(char c) {
 }
 
 void prints(String string) {
-	map(char)(string, *printc);
+	mapList(char)(string, *printc);
 }
 
 
 List(char) * sreverse(List(char) * string) {
-	List(char) * t = tail(char)(string);
+	List(char) * t = tailList(char)(string);
 	if (isEmpty(char)(t)) return t;
 
 	List(char) * rt = sreverse(t);
-	addLast(char)(rt, head(char)(string));
+	addLast(char)(rt, headList(char)(string));
 	free(t);
 	return rt;
 }
