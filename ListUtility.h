@@ -1,7 +1,7 @@
 #ifndef LISTUTILITY_H
 #define LISTUTILITY_H
 
-#include "LinkedList.h"
+#include "LinkedList.c"
 
 
 #define deepCopyList(T) deepCopyList##T
@@ -78,8 +78,6 @@ List(U) * projectList(T,U)(List(T) * list, U (f)(T)) { \
 
 
 #define ListUtilityLib(T) \
-LinkedListLib(T) \
-\
 deepCopyListDefinition(T) \
 \
 headListDefinition(T) \
@@ -89,5 +87,6 @@ tailListDefinition(T) \
 concatListDefinition(T) \
 \
 mapListDefinition(T) \
+
 
 #endif

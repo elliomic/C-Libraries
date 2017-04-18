@@ -3,11 +3,7 @@
 
 #include <stdio.h>
 #include <stdlib.h>
-
-typedef char boolean;
-
-#define FALSE 0
-#define TRUE 1
+#include <stdbool.h>
 
 
 #define Node(T) Node##T
@@ -79,7 +75,7 @@ void clearList(T)(List(T) * list) {	  \
 
 #define isEmpty(T) isEmpty##T
 #define isEmptyDefinition(T) \
-boolean isEmpty(T)(List(T) * list) { \
+bool isEmpty(T)(List(T) * list) { \
 	return list->size == 0; \
 }
 
@@ -211,7 +207,7 @@ void printList(T)(List(T) * list) { \
 }
 
 
-#define LinkedListLib(T)	\
+#define LinkedListLib(T) \
 NodeDefinition(T) \
 \
 ListDefinition(T) \

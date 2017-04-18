@@ -26,7 +26,7 @@ T identity(T)(T e) { \
 
 #define constructIterator(T) constructIterator##T
 #define constructIteratorDefinition(T) \
-Iterator(T) * constructIterator(T)(T start, T(*gen)(T) ) { \
+Iterator(T) * constructIterator(T)(T start, T(*gen)(T)) { \
 	Iterator(T) * iter = malloc(sizeof(Iterator(T))); \
 	iter->current = start; \
 	iter->gen = gen; \
@@ -60,6 +60,5 @@ constructIteratorDefinition(T)	\
 currentIterDefinition(T) \
 \
 nextIterDefinition(T) \
-
 
 #endif

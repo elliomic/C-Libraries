@@ -1,8 +1,8 @@
 #ifndef ITERATORUTILITY_H
 #define ITERATORUTILITY_H
 
-#include "Iterator.h"
-#include "LinkedList.h"
+#include "Iterator.c"
+#include "LinkedList.c"
 
 
 #define deepCopyIter(T) deepCopyIter##T
@@ -10,6 +10,7 @@
 Iterator(T) * deepCopyIter(T)(Iterator(T) * iter) { \
 	Iterator(T) * newIterator = constructIterator(T)(iter->current, iter->gen); \
 	newIterator->trans = iter->trans; \
+	return newIterator; \
 }
 
 
@@ -44,15 +45,11 @@ List(T) * take(T)(Iterator(T) * iter, int n) { \
 
 
 #define IteratorUtilityLib(T) \
-IteratorLib(T) \
-\
 deepCopyIterDefinition(T) \
 \
 headIterDefinition(T) \
 \
 tailIterDefinition(T) \
-\
-LinkedListLib(T) \
 \
 takeDefinition(T) \
 
