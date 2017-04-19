@@ -4,8 +4,15 @@
 #include <stdlib.h>
 
 
-int inc(int x) { return x + 1; }
-int dec(int x) { return x - 1; }
+int inc(int x)
+{
+	return x + 1;
+}
+
+int dec(int x)
+{
+	return x - 1;
+}
 
 
 #define Iterator(T) Iterator##T
@@ -19,14 +26,16 @@ typedef struct Iterator(T) { \
 
 #define identity(T) identity##T
 #define identityDefinition(T) \
-T identity(T)(T e) { \
+T identity(T)(T e)
+{ \
 	return e; \
 }
 
 
 #define constructIterator(T) constructIterator##T
 #define constructIteratorDefinition(T) \
-Iterator(T) * constructIterator(T)(T start, T(*gen)(T)) { \
+Iterator(T) * constructIterator(T)(T start, T(*gen)(T)) \
+{ \
 	Iterator(T) * iter = malloc(sizeof(Iterator(T))); \
 	iter->current = start; \
 	iter->gen = gen; \
@@ -37,14 +46,16 @@ Iterator(T) * constructIterator(T)(T start, T(*gen)(T)) { \
 
 #define currentIter(T) currentIter##T
 #define currentIterDefinition(T) \
-T currentIter(T)(Iterator(T) * iter) { \
+T currentIter(T)(Iterator(T) * iter) \
+{ \
 	return iter->trans(iter->current); \
 }
 
 
 #define nextIter(T) nextIter##T
 #define nextIterDefinition(T) \
-T nextIter(T)(Iterator(T) * iter) { \
+T nextIter(T)(Iterator(T) * iter) \
+{ \
 	iter->current = iter->gen(iter->current); \
 	return iter->trans(iter->current); \
 }

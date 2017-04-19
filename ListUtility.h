@@ -6,7 +6,8 @@
 
 #define deepCopyList(T) deepCopyList##T
 #define deepCopyListDefinition(T) \
-List(T) * deepCopyList(T)(List(T) * list) { \
+List(T) * deepCopyList(T)(List(T) * list) \
+{ \
 	List(T) * newList = constructList(T)(); \
 	Node(T) * n = list->head; \
 \
@@ -20,14 +21,16 @@ List(T) * deepCopyList(T)(List(T) * list) { \
 
 #define headList(T) headList##T
 #define headListDefinition(T) \
-T headList(T)(List(T) * list) { \
+T headList(T)(List(T) * list) \
+{ \
 	return list->head->element; \
 }
 
 
 #define tailList(T) tailList##T
 #define tailListDefinition(T) \
-List(T) * tailList(T)(List(T) * list) { \
+List(T) * tailList(T)(List(T) * list) \
+{ \
 	List(T) * newList = deepCopyList(T)(list); \
 	Node(T) * h = newList->head; \
 \
@@ -42,7 +45,8 @@ List(T) * tailList(T)(List(T) * list) { \
 
 #define concatList(T) concatList##T
 #define concatListDefinition(T) \
-List(T) * concatList(T)(List(T) * list1, List(T) * list2) { \
+List(T) * concatList(T)(List(T) * list1, List(T) * list2) \
+{ \
 	List(T) * newList = deepCopyList(T)(list1); \
 	List(T) * newList2 = deepCopyList(T)(list2); \
 	getNode(T)(newList, getSize(T)(newList) - 1)->next = newList2->head; \
@@ -51,9 +55,10 @@ List(T) * concatList(T)(List(T) * list1, List(T) * list2) { \
 }
 
 
-#define mapList(T) mapList##T
-#define mapListDefinition(T) \
-void mapList(T)(List(T) * list, void (f)(T)) { \
+#define applyList(T) applyList##T
+#define applyListDefinition(T) \
+void applyList(T)(List(T) * list, void (f)(T)) \
+{ \
 	Node(T) * n = list->head; \
 \
 	while (n != NULL) { \
@@ -65,7 +70,8 @@ void mapList(T)(List(T) * list, void (f)(T)) { \
 
 #define projectList(T,U) projectList##T##U
 #define projectListDefinition(T,U) \
-List(U) * projectList(T,U)(List(T) * list, U (f)(T)) { \
+List(U) * projectList(T,U)(List(T) * list, U (f)(T)) \
+{ \
 	List(U) * newList = constructList(U)(); \
 	Node(T) * n = list->head; \
 \
@@ -86,7 +92,7 @@ tailListDefinition(T) \
 \
 concatListDefinition(T) \
 \
-mapListDefinition(T) \
+applyListDefinition(T) \
 
 
 #endif

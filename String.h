@@ -7,7 +7,8 @@ printListDefinition(char, "'%c'")
 
 #define String List(char)*
 
-String newString(char* literal) {
+String newString(char* literal)
+{
 	String string = constructList(char)();
 	
 	{
@@ -21,20 +22,24 @@ String newString(char* literal) {
 	return string;
 }
 
-int slength(String string) {
+int slength(String string)
+{
 	return string->size;
 }
 
-void printc(char c) {
+void printc(char c)
+{
 	putchar(c);
 }
 
-void prints(String string) {
-	mapList(char)(string, *printc);
+void prints(String string)
+{
+	applyList(char)(string, *printc);
 }
 
 
-List(char) * sreverse(List(char) * string) {
+List(char) * sreverse(List(char) * string)
+{
 	List(char) * t = tailList(char)(string);
 	if (isEmpty(char)(t)) return t;
 

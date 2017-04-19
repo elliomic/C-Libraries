@@ -7,7 +7,8 @@
 
 #define deepCopyIter(T) deepCopyIter##T
 #define deepCopyIterDefinition(T) \
-Iterator(T) * deepCopyIter(T)(Iterator(T) * iter) { \
+Iterator(T) * deepCopyIter(T)(Iterator(T) * iter) \
+{ \
 	Iterator(T) * newIterator = constructIterator(T)(iter->current, iter->gen); \
 	newIterator->trans = iter->trans; \
 	return newIterator; \
@@ -16,21 +17,24 @@ Iterator(T) * deepCopyIter(T)(Iterator(T) * iter) { \
 
 #define headIter(T) headIter##T
 #define headIterDefinition(T) \
-T headIter(T)(Iterator(T) * iter) { \
+T headIter(T)(Iterator(T) * iter) \
+{ \
 	return currentIter(T)(iter); \
 }
 
 
 #define tailIter(T) tailIter##T
 #define tailIterDefinition(T) \
-Iterator(T) * tailIter(T)(Iterator(T) * iter) { \
+Iterator(T) * tailIter(T)(Iterator(T) * iter) \
+{ \
 	return constructIterator(T)(nextIter(T)(iter), iter->gen); \
 }
 
 
 #define take(T) take##T
 #define takeDefinition(T) \
-List(T) * take(T)(Iterator(T) * iter, int n) { \
+List(T) * take(T)(Iterator(T) * iter, int n) \
+{ \
 	List(T) * list = constructList(T)(); \
 	Node(T) * cur = list->head = constructNode(T)(currentIter(T)(iter), NULL); \
 \
