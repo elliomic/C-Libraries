@@ -1,90 +1,127 @@
 #ifndef LISTUTILITY_H
 #define LISTUTILITY_H
 
-#include "LinkedList.c"
+#include "LinkedList.h"
 
 
-#define deepCopyList(T) deepCopyList##T
-#define deepCopyListDefinition(T) \
-List(T) * deepCopyList(T)(List(T) * list) \
+#define copyList(T) copyList##T
+#define copyListDefinition(T) \
+List(T) *copyList(T)(List(T) *list) \
 { \
-	List(T) * newList = constructList(T)(); \
-	Node(T) * n = list->head; \
+	List(T) *listCopy = newList(T)(); \
+	Node(T) *n = list->head; \
 \
 	while (n != NULL) { \
-		addLast(T)(newList, n->element); \
-		n = n->next; \
+		addLast(T)(listCopy, n->element); \
+		n = nextNode(T)(n); \
 	} \
-	return newList; \
+	return listCopy; \
 }
 
 
 #define headList(T) headList##T
 #define headListDefinition(T) \
-T headList(T)(List(T) * list) \
+T headList(T)(List(T) *list) \
 { \
-	return list->head->element; \
+	if (list->head != NULL) return nodeElement(T)(list->head); \
+	die("error: head of empty list"); \
 }
 
 
 #define tailList(T) tailList##T
 #define tailListDefinition(T) \
-List(T) * tailList(T)(List(T) * list) \
+List(T) *tailList(T)(List(T) *list) \
 { \
-	List(T) * newList = deepCopyList(T)(list); \
-	Node(T) * h = newList->head; \
+	if (emptyList(T)(list)) die("error: tail of empty list") ; \
+\
+	List(T) *tail = newList(T)(); \
+	Node(T) *h = list->head; \
 \
 	if (h != NULL) { \
-		newList->head = newList->head->next; \
-		free(h); \
+		tail->head = nextNode(T)(list->head); \
+		tail->size = listSize(T)(list) - 1; \
 	} \
 \
-	return newList; \
+	return tail; \
 }
 
 
 #define concatList(T) concatList##T
 #define concatListDefinition(T) \
-List(T) * concatList(T)(List(T) * list1, List(T) * list2) \
+List(T) *concatList(T)(List(T) *list1, List(T) *list2) \
 { \
-	List(T) * newList = deepCopyList(T)(list1); \
-	List(T) * newList2 = deepCopyList(T)(list2); \
-	getNode(T)(newList, getSize(T)(newList) - 1)->next = newList2->head; \
-	free(newList2); \
-	return newList; \
+	List(T) *listCopy = copyList(T)(list1); \
+	List(T) *listCopy2 = copyList(T)(list2); \
+	getNode(T)(listCopy, listSize(T)(listCopy) - 1)->next = listCopy2->head; \
+	listCopy->size = listSize(T)(list1) + listSize(T)(list2); \
+	free(listCopy2); \
+	return listCopy; \
 }
 
 
 #define applyList(T) applyList##T
 #define applyListDefinition(T) \
-void applyList(T)(List(T) * list, void (f)(T)) \
+void applyList(T)(List(T) *list, void (f)(T)) \
 { \
-	Node(T) * n = list->head; \
+	Node(T) *n = list->head; \
 \
 	while (n != NULL) { \
 		f(n->element); \
-		n = n->next; \
+		n = nextNode(T)(n); \
 	} \
 }
 
 
 #define projectList(T,U) projectList##T##U
 #define projectListDefinition(T,U) \
-List(U) * projectList(T,U)(List(T) * list, U (f)(T)) \
+List(U) *projectList(T,U)(List(T) *list, U (f)(T)) \
 { \
-	List(U) * newList = constructList(U)(); \
-	Node(T) * n = list->head; \
+	List(U) *listCopy = newList(U)(); \
+	Node(T) *n = list->head; \
 \
 	while (n != NULL) { \
-		addLast(U)(newList, f(n->element)); \
-		n = n->next; \
+		addLast(U)(listCopy, f(n->element)); \
+		n = nextNode(T)(n); \
 	} \
-	return newList; \
+	return listCopy; \
+}
+
+
+#define arrayToList(T) arrayToList##T
+#define arrayToListDefinition(T) \
+List(T) *arrayToList(T)(T *array, int size) \
+{ \
+	List(T) *list = newList(T)(); \
+	{ \
+		int i; \
+		for (i = 0; i < size; i++) { \
+			addLast(T)(list, array[i]); \
+		} \
+	} \
+	return list; \
+}
+
+
+#define freeList(T) freeList##T
+#define freeListDefinition(T) \
+void freeList(T)(List(T) *list) \
+{ \
+	Node(T) *current; \
+	Node(T) *next; \
+	current = list->head; \
+\
+	while (current != NULL) { \
+		next = nextNode(T)(current); \
+		free(current); \
+		current = next; \
+	} \
+\
+	free(list); \
 }
 
 
 #define ListUtilityLib(T) \
-deepCopyListDefinition(T) \
+copyListDefinition(T) \
 \
 headListDefinition(T) \
 \
@@ -93,6 +130,10 @@ tailListDefinition(T) \
 concatListDefinition(T) \
 \
 applyListDefinition(T) \
+\
+arrayToListDefinition(T) \
+\
+freeListDefinition(T) \
 
 
 #endif
