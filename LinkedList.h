@@ -4,75 +4,85 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdbool.h>
+#include <execinfo.h>
 
 
 #define Node(T) Node##T
 #define NodeDefinition(T) \
 typedef struct Node(T) { \
 	T element; \
-	struct Node(T) * next; \
+	struct Node(T) *next; \
 } Node(T);
 
 
 #define List(T) List##T
 #define ListDefinition(T) \
 typedef struct List(T) { \
-	Node(T) * head; \
+	Node(T) *head; \
 	int size; \
 } List(T);
 
 
-#define constructNode(T) constructNode##T
-#define constructNodeDefinition(T) \
-Node(T) * constructNode(T)(T element, Node(T) * next) \
+#define newNode(T) newNode##T
+#define newNodeDefinition(T) \
+Node(T) *newNode(T)(T element, Node(T) *next) \
 { \
-	Node(T) * node = malloc(sizeof(Node(T))); \
+	Node(T) *node = malloc(sizeof(Node(T))); \
 	node->element = element; \
 	node->next = next; \
 	return node; \
 }
 
 
-#define constructList(T) constructList##T
-#define constructListDefinition(T) \
-List(T) * constructList(T)(void) \
+#define newList(T) newList##T
+#define newListDefinition(T) \
+List(T) *newList(T)(void) \
 { \
-	List(T) * list = malloc(sizeof(List(T))); \
+	List(T) *list = malloc(sizeof(List(T))); \
 	list->size = 0; \
 	return list; \
 }
 
 
-#define getNodeElement(T) getNodeElement##T
-#define getNodeElementDefinition(T) \
-T getNodeElement(T)(Node(T) * node) \
+#define nodeElement(t) nodeElement##t
+#define nodeElementDefinition(T) \
+T nodeElement(T)(Node(T) *node) \
 { \
 	return node->element; \
 }
 
 
-#define getNextNode(T) getNextNode##T
-#define getNextNodeDefinition(T) \
-Node(T) * getNextNode(T)(Node(T) * node) \
+#define nextNode(T) nextNode##T
+#define nextNodeDefinition(T) \
+Node(T) *nextNode(T)(Node(T) *node) \
 { \
 	return node->next; \
 }
 
 
-#define isIndexOutOfBounds(T) isIndexOutOfBounds##T
-#define isIndexOutOfBoundsDefinition(T) \
-void isIndexOutOfBounds(T)(List(T) * list, int index) \
-{ \
-	if (index >= list->size || index < 0) { \
-		fputs("error: index out of bounds\n", stderr); \
-		exit(0); \
-	} \
+void die(const char *message)
+{
+	int size = 10000;
+	void *buffer[size];
+	size = backtrace(buffer, size);
+	fputs(message, stderr);
+	fputc('\n', stderr);
+	backtrace_symbols_fd(buffer, size, 2);
+	exit(1);
 }
 
 
-#define getSize(T) getSize##T
-#define getSizeDefinition(T) \
-int getSize(T)(List(T) * list) \
+#define checkIndexBounds(T) checkIndexBounds##T
+#define checkIndexBoundsDefinition(T) \
+void checkIndexBounds(T)(List(T) *list, int index) \
+{ \
+	if (index >= listSize(T)(list) || index < 0) die("error: index out of bounds"); \
+}
+
+
+#define listSize(T) listSize##T
+#define listSizeDefinition(T) \
+int listSize(T)(List(T) *list) \
 { \
 	return list->size; \
 }
@@ -80,12 +90,12 @@ int getSize(T)(List(T) * list) \
 
 #define clearList(T) clearList##T
 #define clearListDefinition(T) \
-void clearList(T)(List(T) * list) \
+void clearList(T)(List(T) *list) \
 { \
-	Node(T) * e = list->head; \
+	Node(T) *e = list->head; \
 \
 	while (e != NULL) { \
-		Node(T) * next = e->next; \
+		Node(T) *next = nextNode(T)(e); \
 		free(e); \
 		e = next; \
 	} \
@@ -94,19 +104,19 @@ void clearList(T)(List(T) * list) \
 }
 
 
-#define isEmpty(T) isEmpty##T
-#define isEmptyDefinition(T) \
-bool isEmpty(T)(List(T) * list) \
+#define emptyList(T) emptyList##T
+#define emptyListDefinition(T) \
+bool emptyList(T)(List(T) *list) \
 { \
-	return list->size == 0; \
+	return listSize(T)(list) == 0; \
 }
 
 
 #define addFirst(T) addFirst##T
 #define addFirstDefinition(T) \
-void addFirst(T)(List(T) * list, T thing) \
+void addFirst(T)(List(T) *list, T thing) \
 { \
-	Node(T) * newNode = constructNode(T)(thing, list->head); \
+	Node(T) *newNode = newNode(T)(thing, list->head); \
 	list->head = newNode; \
 	list->size++; \
 }
@@ -114,17 +124,17 @@ void addFirst(T)(List(T) * list, T thing) \
 
 #define getNode(T) getNode##T
 #define getNodeDefinition(T) \
-Node(T) * getNode(T)(List(T) * list, int index) \
+Node(T) *getNode(T)(List(T) *list, int index) \
 { \
-	Node(T) * thing; \
-	isIndexOutOfBounds(T)(list, index); \
+	Node(T) *thing; \
+	checkIndexBounds(T)(list, index); \
 \
 	thing = list->head; \
 \
 	{ \
 		int i = 0; \
 		while (i < index) { \
-			thing = thing->next; \
+			thing = nextNode(T)(thing); \
 			i++; \
 		} \
 	} \
@@ -135,7 +145,7 @@ Node(T) * getNode(T)(List(T) * list, int index) \
 
 #define addIndex(T) addIndex##T
 #define addIndexDefinition(T) \
-void addIndex(T)(List(T) * list, int index, T thing) \
+void addIndex(T)(List(T) *list, int index, T thing) \
 { \
 	if (index == 0) \
 	{ \
@@ -143,8 +153,8 @@ void addIndex(T)(List(T) * list, int index, T thing) \
 		return; \
 	} \
 \
-	Node(T) * previous = getNode(T)(list, index - 1); \
-	Node(T) * newNode = constructNode(T)(thing, previous->next); \
+	Node(T) *previous = getNode(T)(list, index - 1); \
+	Node(T) *newNode = newNode(T)(thing, nextNode(T)(previous)); \
 	previous->next = newNode; \
 	list->size++; \
 }
@@ -152,26 +162,26 @@ void addIndex(T)(List(T) * list, int index, T thing) \
 
 #define addLast(T) addLast##T
 #define addLastDefinition(T) \
-void addLast(T)(List(T) * list, T thing) \
+void addLast(T)(List(T) *list, T thing) \
 { \
-	addIndex(T)(list, list->size, thing); \
+	addIndex(T)(list, listSize(T)(list), thing); \
 }
 
 
-#define getElementAt(T) getElementAt##T
-#define getElementAtDefinition(T) \
-T getElementAt(T)(List(T) * list, int index) \
+#define getElement(T) getElement##T
+#define getElementDefinition(T) \
+T getElement(T)(List(T) *list, int index) \
 { \
-	return getNodeElement(getNode(T)(list, index)); \
+	return nodeElement(T)(getNode(T)(list, index)); \
 }
 
 
-#define setElementAt(T) setElementAt##T
-#define setElementAtDefinition(T) \
-T setElementAt(T)(List(T) * list, int index, T thing) \
+#define setElement(T) setElement##T
+#define setElementDefinition(T) \
+T setElement(T)(List(T) *list, int index, T thing) \
 { \
-	Node(T) * e = getNode(T)(list, index); \
-	T oldElement = getNodeElement(e); \
+	Node(T) *e = getNode(T)(list, index); \
+	T oldElement = nodeElement(T)(e); \
 	e->element = thing; \
 	return oldElement; \
 }
@@ -179,13 +189,13 @@ T setElementAt(T)(List(T) * list, int index, T thing) \
 
 #define removeIndex(T) removeIndex##T
 #define removeIndexDefinition(T) \
-T removeIndex(T)(List(T) * list, int index) \
+T removeIndex(T)(List(T) *list, int index) \
 { \
-	Node(T) * previous = getNode(T)(list, index - 1); \
-	Node(T) * thing = previous->next; \
+	Node(T) *previous = getNode(T)(list, index - 1); \
+	Node(T) *thing = nextNode(T)(previous); \
 \
-	T element = getNodeElement(thing); \
-	previous->next = thing->next; \
+	T element = nodeElement(T)(thing); \
+	previous->next = nextNode(T)(thing); \
 	list->size--; \
 \
 	free(thing); \
@@ -195,23 +205,31 @@ T removeIndex(T)(List(T) * list, int index) \
 
 #define removeFirst(T) removeFirst##T
 #define removeFirstDefinition(T) \
-T removeFirst(T)(List(T) * list) \
+T removeFirst(T)(List(T) *list) \
 { \
 	return removeIndex(T)(list, 0); \
 }
 
 
+#define removeLast(T) removeLast##T
+#define removeLastDefinition(T) \
+T removeLast(T)(List(T) *list) \
+{ \
+	return removeIndex(T)(list, listSize(T)(list)); \
+}
+
+
 #define indexOf(T) indexOf##T
 #define indexOfDefinition(T) \
-int indexOf(T)(List(T) * list, T thing) \
+int indexOf(T)(List(T) *list, T thing) \
 { \
 	int index = 0; \
-	Node(T) * n = list->head; \
+	Node(T) *n = list->head; \
 \
 	while (n != NULL) { \
-		if (getNodeElement(n) == thing) return index; \
+		if (nodeElement(T)(n) == thing) return index; \
 		index++; \
-		n = n->next; \
+		n = nextNode(T)(n); \
 	} \
 \
 	return -1; \
@@ -220,22 +238,20 @@ int indexOf(T)(List(T) * list, T thing) \
 
 #define printList(T) printList##T
 #define printListDefinition(T,P) \
-void printList(T)(List(T) * list) \
+void printList(T)(List(T) *list) \
 { \
-	Node(T) * current = list->head; \
-	if (current == NULL) puts("[]"); \
-\
+	Node(T) *current = list->head; \
+	putchar('['); \
 	{ \
 		int i; \
-		putchar('['); \
-		for (i = 0; i < list->size - 1; i++) { \
-			printf(P, getNodeElement(current)); \
+		for (i = 0; i < listSize(T)(list) - 1; i++) { \
+			printf(P, nodeElement(T)(current)); \
 			printf(", "); \
-			current = current->next; \
+			current = nextNode(T)(current); \
 		} \
-		printf(P, getNodeElement(current)); \
-		printf("]\n"); \
 	} \
+	if (current != NULL) printf(P, nodeElement(T)(current)); \
+	puts("]"); \
 }
 
 
@@ -244,21 +260,21 @@ NodeDefinition(T) \
 \
 ListDefinition(T) \
 \
-constructNodeDefinition(T) \
+newNodeDefinition(T) \
 \
-constructListDefinition(T) \
+newListDefinition(T) \
 \
-getNodeElementDefinition(T) \
+nodeElementDefinition(T) \
 \
-getNextNodeDefinition(T) \
+nextNodeDefinition(T) \
 \
-isIndexOutOfBoundsDefinition(T) \
+listSizeDefinition(T) \
 \
-getSizeDefinition(T) \
+checkIndexBoundsDefinition(T) \
 \
 clearListDefinition(T) \
 \
-isEmptyDefinition(T) \
+emptyListDefinition(T) \
 \
 addFirstDefinition(T) \
 \
@@ -268,13 +284,15 @@ addIndexDefinition(T) \
 \
 addLastDefinition(T) \
 \
-getElementAtDefinition(T) \
+getElementDefinition(T) \
 \
-setElementAtDefinition(T) \
+setElementDefinition(T) \
 \
 removeIndexDefinition(T) \
 \
 removeFirstDefinition(T) \
+\
+removeLastDefinition(T) \
 \
 indexOfDefinition(T) \
 
