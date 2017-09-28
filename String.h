@@ -1,15 +1,23 @@
 #ifndef STRING_H
 #define STRING_H
 
-#include "ListUtility.c"
+#include <math.h>
+#include "typedefs.h"
+#include "ListUtility.h"
 
-printListDefinition(char, "'%c'")
+LinkedListLib(char)
+ListUtilityLib(char)
+LinkedListLib(char_p)
+ListUtilityLib(char_p)
 
-#define String List(char)*
+typedef List(char) * String;
 
-String newString(char* literal)
+LinkedListLib(String)
+projectListDefinition(char_p, String)
+
+String newString(const char_p literal)
 {
-	String string = constructList(char)();
+	String string = newList(char)();
 	
 	{
 		int i = 0;
@@ -24,7 +32,7 @@ String newString(char* literal)
 
 int slength(String string)
 {
-	return string->size;
+	return listSize(char)(string);
 }
 
 void printc(char c)
@@ -34,19 +42,48 @@ void printc(char c)
 
 void prints(String string)
 {
-	applyList(char)(string, *printc);
+	applyList(char)(string, printc);
 }
 
-
-List(char) * sreverse(List(char) * string)
+String sreverse(String string)
 {
-	List(char) * t = tailList(char)(string);
-	if (isEmpty(char)(t)) return t;
+	String t = tailList(char)(string);
+	if (emptyList(char)(t)) return copyList(char)(string);
 
-	List(char) * rt = sreverse(t);
+	String rt = sreverse(t);
 	addLast(char)(rt, headList(char)(string));
 	free(t);
 	return rt;
+}
+
+#define toUInt(T) toUInt##T
+unsigned int toUInt(String)(String string)
+{
+	char h = headList(char)(string);
+
+	if (h >= '0' && h <= '9') {
+		if (listSize(char)(string) == 1) return h - '0';
+		else return (h - '0') * pow(10, listSize(char)(string) - 1) + toUInt(String)(tailList(char)(string));
+	}
+
+	die("error: conversion from string to unsigned int failed");
+}
+
+#define toInt(T) toInt##T
+int toInt(String)(String string)
+{
+	char h = headList(char)(string);
+
+	if (h == '-') return -1 * toUInt(String)(tailList(char)(string));
+	if (h == '+') return toUInt(String)(tailList(char)(string));
+	if (h >= '0' && h <= '9') return toUInt(String)(string);
+
+	die("error: conversion from string to int failed");
+}
+
+List(String) *convertArgs(int argc, char_p *argv)
+{
+	return projectList(char_p, String)(arrayToList(char_p)(argv, argc), newString);
 }
 
 #endif
