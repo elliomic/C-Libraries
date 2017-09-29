@@ -120,6 +120,32 @@ void freeList(T)(List(T) *list) \
 }
 
 
+#define foldListR(T,U) foldListR##T##U
+#define foldListRDefinition(T,U) \
+U foldListR(T,U)(List(T) *list, U (f)(T, T), T base) \
+{ \
+	if (emptyList(T)(list)) return base; \
+\
+	List(T) *tail = tailList(T)(list); \
+	U r = f(headList(T)(list), foldListR(T,U)(tail, f, base)); \
+	free(tail); \
+	return r; \
+}
+
+
+#define foldListL(T,U) foldListL##T##U
+#define foldListLDefinition(T,U) \
+U foldListL(T,U)(List(T) *list, U (f)(T, T), T base) \
+{ \
+	if (emptyList(T)(list)) return base; \
+\
+	List(T) *tail = tailList(T)(list); \
+	U r = foldListL(T,U)(tail, f, f(base, headList(T)(list))); \
+	free(tail); \
+	return r; \
+}
+
+
 #define ListUtilityLib(T) \
 copyListDefinition(T) \
 \
