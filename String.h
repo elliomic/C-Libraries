@@ -3,12 +3,13 @@
 
 #include <math.h>
 #include "typedefs.h"
+#include "LinkedList.h"
 #include "ListUtility.h"
 
 LinkedListLib(char)
 ListUtilityLib(char)
 LinkedListLib(char_p)
-ListUtilityLib(char_p)
+arrayToListDefinition(char_p)
 
 typedef List(char) * String;
 
@@ -17,17 +18,11 @@ projectListDefinition(char_p, String)
 
 String newString(const char_p literal)
 {
-	String string = newList(char)();
-	
-	{
-		int i = 0;
-		while (literal[i] != '\0') {
-			addLast(char)(string, literal[i]);
-			i++;
-		}
-	}
-	
-	return string;
+	if (literal[0] == '\0') return newList(char)();
+	else return
+		     addFirst(char)(
+			     newString(literal + 1),
+			     literal[0]);
 }
 
 int slength(String string)
@@ -47,13 +42,12 @@ void prints(String string)
 
 String sreverse(String string)
 {
-	String t = tailList(char)(string);
-	if (emptyList(char)(t)) return copyList(char)(string);
-
-	String rt = sreverse(t);
-	addLast(char)(rt, headList(char)(string));
-	free(t);
-	return rt;
+	if (emptyList(char)(string)) return newList(char)();
+	else return
+		     addLast(char)(
+			     sreverse(
+				     tailList(char)(string)),
+			     headList(char)(string));
 }
 
 #define toUInt(T) toUInt##T

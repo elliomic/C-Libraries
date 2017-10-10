@@ -9,7 +9,7 @@
 Iterator(T) *copyIter(T)(Iterator(T) *iter) \
 { \
 	Iterator(T) *newIter = newIterator(T)(iter->current, iter->gen); \
-	newIter->trans = copyList(trans_fun_type##T)(iter->trans); \
+	newIter->trans = iter->trans; \
 	return newIter; \
 }
 
@@ -19,7 +19,7 @@ Iterator(T) *copyIter(T)(Iterator(T) *iter) \
 Iterator(T) *applyIter(T)(Iterator(T) *iter, trans_fun_type(T) f) \
 { \
 	Iterator(T) *newIter = copyIter(T)(iter); \
-	addLast(trans_fun_type##T)(newIter->trans, f); \
+	newIter->trans = addLast(trans_fun_type##T)(newIter->trans, f); \
 	return newIter; \
 }
 
@@ -47,23 +47,10 @@ Iterator(T) *tailIter(T)(Iterator(T) *iter) \
 List(T) *takeIter(T)(Iterator(T) *iter, int n) \
 { \
 	List(T) *list = newList(T)(); \
-	T element = restartIter(T)(iter); \
-	while (listSize(T)(list) < n) { \
-		addLast(T)(list, element); /* addLast is too slow in this loop */ \
-		element = nextIter(T)(iter); \
-	} \
+	T element; \
+	for (element = restartIter(T)(iter); listSize(T)(list) < n; element = nextIter(T)(iter)) addLast(T)(list, element); \
 	return list; \
 }
-
-
-#define freeIter(T) freeIter##T
-#define freeIterDefinition(T) \
-void freeIter(T)(Iterator(T) *iter) \
-{ \
-	freeList(trans_fun_type##T)(iter->trans); \
-	free(iter); \
-}
-
 
 #define IteratorUtilityLib(T) \
 copyIterDefinition(T) \
@@ -76,7 +63,6 @@ tailIterDefinition(T) \
 \
 takeIterDefinition(T) \
 \
-freeIterDefinition(T) \
 
 
 #endif

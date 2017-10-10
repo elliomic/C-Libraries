@@ -4,8 +4,8 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdbool.h>
-#include <execinfo.h>
-
+#include "debug.h"
+#include "gc.h"
 
 #define Node(T) Node##T
 #define NodeDefinition(T) \
@@ -19,18 +19,66 @@ typedef struct Node(T) { \
 #define ListDefinition(T) \
 typedef struct List(T) { \
 	Node(T) *head; \
+	Node(T) *foot; \
 	int size; \
 } List(T);
+
+
+#define linkNodes(T) linkNodes##T
+#define linkNodesDefinition(T) \
+Node(T) *linkNodes(T)(Node(T) *first, Node(T) *second) \
+{ \
+	first->next = second; \
+	return first; \
+}
+
+
+#define setNodeElement(T) setNodeElement##T
+#define setNodeElementDefinition(T) \
+Node(T) *setNodeElement(T)(Node(T) *node, T element) \
+{ \
+	node->element = element; \
+	return node; \
+}
 
 
 #define newNode(T) newNode##T
 #define newNodeDefinition(T) \
 Node(T) *newNode(T)(T element, Node(T) *next) \
 { \
-	Node(T) *node = malloc(sizeof(Node(T))); \
-	node->element = element; \
-	node->next = next; \
-	return node; \
+	return \
+		linkNodes(T)( \
+			setNodeElement(T)( \
+				tgc_alloc(&gc, sizeof(Node(T))), \
+				element), \
+			next); \
+}
+
+
+#define setListHead(T) setListHead##T
+#define setListHeadDefinition(T) \
+List(T) *setListHead(T)(List(T) *list, Node(T) *node) \
+{ \
+	list->head = node; \
+	return list; \
+}
+
+
+#define setListFoot(T) setListFoot##T
+#define setListFootDefinition(T) \
+List(T) *setListFoot(T)(List(T) *list, Node(T) *node) \
+{ \
+	list->foot = node; \
+	return list; \
+}
+
+
+#define setListSize(T) setListSize##T
+#define setListSizeDefinition(T) \
+List(T) *setListSize(T)(List(T) *list, int size)	\
+{ \
+	list->size = size; \
+	return list; \
 }
 
 
@@ -38,13 +86,18 @@ Node(T) *newNode(T)(T element, Node(T) *next) \
 #define newListDefinition(T) \
 List(T) *newList(T)(void) \
 { \
-	List(T) *list = malloc(sizeof(List(T))); \
-	list->size = 0; \
-	return list; \
+	return \
+		setListSize(T)( \
+			setListFoot(T)( \
+				setListHead(T)( \
+					tgc_alloc(&gc, sizeof(List(T))), \
+					NULL), \
+				NULL), \
+			0); \
 }
 
 
-#define nodeElement(t) nodeElement##t
+#define nodeElement(T) nodeElement##T
 #define nodeElementDefinition(T) \
 T nodeElement(T)(Node(T) *node) \
 { \
@@ -60,47 +113,11 @@ Node(T) *nextNode(T)(Node(T) *node) \
 }
 
 
-void die(const char *message)
-{
-	int size = 10000;
-	void *buffer[size];
-	size = backtrace(buffer, size);
-	fputs(message, stderr);
-	fputc('\n', stderr);
-	backtrace_symbols_fd(buffer, size, 2);
-	exit(1);
-}
-
-
-#define checkIndexBounds(T) checkIndexBounds##T
-#define checkIndexBoundsDefinition(T) \
-void checkIndexBounds(T)(List(T) *list, int index) \
-{ \
-	if (index >= listSize(T)(list) || index < 0) die("error: index out of bounds"); \
-}
-
-
 #define listSize(T) listSize##T
 #define listSizeDefinition(T) \
 int listSize(T)(List(T) *list) \
 { \
 	return list->size; \
-}
-
-
-#define clearList(T) clearList##T
-#define clearListDefinition(T) \
-void clearList(T)(List(T) *list) \
-{ \
-	Node(T) *e = list->head; \
-\
-	while (e != NULL) { \
-		Node(T) *next = nextNode(T)(e); \
-		free(e); \
-		e = next; \
-	} \
-\
-	list->size = 0; \
 }
 
 
@@ -112,13 +129,21 @@ bool emptyList(T)(List(T) *list) \
 }
 
 
-#define addFirst(T) addFirst##T
-#define addFirstDefinition(T) \
-void addFirst(T)(List(T) *list, T thing) \
+#define incListSize(T) incListSize##T
+#define incListSizeDefinition(T) \
+List(T) *incListSize(T)(List(T) *list)	\
 { \
-	Node(T) *newNode = newNode(T)(thing, list->head); \
-	list->head = newNode; \
 	list->size++; \
+	return list; \
+}
+
+
+#define checkIndexBounds(T) checkIndexBounds##T
+#define checkIndexBoundsDefinition(T) \
+bool checkIndexBounds(T)(List(T) *list, int index) \
+{ \
+	if (index >= listSize(T)(list) || index < 0) die("error: index out of bounds"); \
+	else return true; \
 }
 
 
@@ -127,44 +152,147 @@ void addFirst(T)(List(T) *list, T thing) \
 Node(T) *getNode(T)(List(T) *list, int index) \
 { \
 	Node(T) *thing; \
+	int i; \
 	checkIndexBounds(T)(list, index); \
 \
 	thing = list->head; \
 \
-	{ \
-		int i = 0; \
-		while (i < index) { \
-			thing = nextNode(T)(thing); \
-			i++; \
-		} \
-	} \
+	for (i = 0; i < index; i++) thing = nextNode(T)(thing); \
 \
 	return thing; \
 }
 
 
-#define addIndex(T) addIndex##T
-#define addIndexDefinition(T) \
-void addIndex(T)(List(T) *list, int index, T thing) \
+#define headList(T) headList##T
+#define headListDefinition(T) \
+T headList(T)(List(T) *list) \
 { \
-	if (index == 0) \
-	{ \
-		addFirst(T)(list, thing); \
-		return; \
-	} \
-\
-	Node(T) *previous = getNode(T)(list, index - 1); \
-	Node(T) *newNode = newNode(T)(thing, nextNode(T)(previous)); \
-	previous->next = newNode; \
-	list->size++; \
+	if (list->head != NULL) return nodeElement(T)(list->head); \
+	die("error: head of empty list"); \
+}
+
+
+#define tailList(T) tailList##T
+#define tailListDefinition(T) \
+List(T) *tailList(T)(List(T) *list) \
+{ \
+	if (emptyList(T)(list)) die("error: tail of empty list") ; \
+	return \
+		setListSize(T)( \
+			setListFoot(T)( \
+				setListHead(T)( \
+					newList(T)(), \
+					nextNode(T)(list->head)), \
+				list->foot), \
+			listSize(T)(list) - 1); \
+}
+
+#define addFirstMutableEmpty(T) addFirstMutableEmpty##T
+#define addFirstMutableEmptyDefinition(T) \
+List(T) *addFirstMutableEmpty(T)(List(T) *list) \
+{ \
+	if (emptyList(T)(list)) return setListFoot(T)(list, list->head); \
+}
+
+
+#define addFirstMutable(T) addFirstMutable##T
+#define addFirstMutableDefinition(T) \
+List(T) *addFirstMutable(T)(List(T) *list, T thing) \
+{ \
+	return \
+		incListSize(T)( \
+			addFirstMutableEmpty(T)( \
+				setListHead(T)( \
+					list, \
+					newNode(T)( \
+						thing, \
+						list->head)))); \
+}
+
+#define addFirstEmpty(T) addFirstEmpty##T
+#define addFirstEmptyDefinition(T) \
+List(T) *addFirstEmpty(T)(List(T) *orig, List(T) *list) \
+{ \
+	if (emptyList(T)(orig)) return setListFoot(T)(list, list->head); \
+	else return setListFoot(T)(list, orig->foot); \
+}
+
+
+#define addFirst(T) addFirst##T
+#define addFirstDefinition(T) \
+List(T) *addFirst(T)(List(T) *list, T thing) \
+{ \
+	return \
+		setListSize(T)( \
+			addFirstEmpty(T)( \
+				list, \
+				setListHead(T)( \
+					newList(T)(), \
+					newNode(T)(thing, list->head))), \
+			listSize(T)(list) + 1); \
+}
+
+
+#define copyList(T) copyList##T
+#define copyListDefinition(T) \
+List(T) *copyList(T)(List(T) *list) \
+{ \
+	if (emptyList(T)(list)) return newList(T)(); \
+	else return \
+		     addFirst(T)( \
+				     tailList(T)(list), \
+			     headList(T)(list)); \
+}
+
+
+#define addAfterFoot(T) addAfterFoot##T
+#define addAfterFootDefinition(T) \
+List(T) *addAfterFoot(T)(List(T) *list, Node(T) *node) \
+{ \
+	if (node == list->foot) return setListFoot(T)(list, nextNode(T)(node)); \
+}
+
+
+#define addAfter(T) addAfter##T
+#define addAfterDefinition(T) \
+List(T) *addAfter(T)(List(T) *list, Node(T) *node, T thing) \
+{ \
+	return \
+		incListSize(T)( \
+			addAfterFoot(T)( \
+				list, \
+				linkNodes(T)( \
+					node, \
+					newNode(T)( \
+						thing, \
+						nextNode(T)(node))))); \
+}
+
+
+#define addLastMutable(T) addLastMutable##T
+#define addLastMutableDefinition(T) \
+List(T) *addLastMutable(T)(List(T) *list, T thing) \
+{ \
+	if (emptyList(T)(list)) return addFirstMutable(T)(list, thing); \
+	else return addAfter(T)(list, list->foot, thing); \
 }
 
 
 #define addLast(T) addLast##T
 #define addLastDefinition(T) \
-void addLast(T)(List(T) *list, T thing) \
+List(T) *addLast(T)(List(T) *list, T thing) \
 { \
-	addIndex(T)(list, listSize(T)(list), thing); \
+	return addLastMutable(T)(copyList(T)(list), thing); \
+}
+
+
+#define addIndex(T) addIndex##T
+#define addIndexDefinition(T) \
+List(T) *addIndex(T)(List(T) *list, int index, T thing) \
+{ \
+	if (index == 0) return addFirst(T)(list, thing); \
+	else if (index == listSize(T)(list)) return addLast(T)(list, thing); \
+	else return addAfter(T)(copyList(T)(list), getNode(T)(list, index - 1), thing); \
 }
 
 
@@ -195,10 +323,9 @@ T removeIndex(T)(List(T) *list, int index) \
 	Node(T) *thing = nextNode(T)(previous); \
 \
 	T element = nodeElement(T)(thing); \
-	previous->next = nextNode(T)(thing); \
+	linkNodes(T)(previous, nextNode(T)(thing)); \
 	list->size--; \
 \
-	free(thing); \
 	return element; \
 }
 
@@ -236,31 +363,22 @@ int indexOf(T)(List(T) *list, T thing) \
 }
 
 
-#define printList(T) printList##T
-#define printListDefinition(T,P) \
-void printList(T)(List(T) *list) \
-{ \
-	Node(T) *current = list->head; \
-	putchar('['); \
-	{ \
-		int i; \
-		for (i = 0; i < listSize(T)(list) - 1; i++) { \
-			printf(P, nodeElement(T)(current)); \
-			printf(", "); \
-			current = nextNode(T)(current); \
-		} \
-	} \
-	if (current != NULL) printf(P, nodeElement(T)(current)); \
-	puts("]"); \
-}
-
-
 #define LinkedListLib(T) \
 NodeDefinition(T) \
 \
 ListDefinition(T) \
 \
-newNodeDefinition(T) \
+linkNodesDefinition(T) \
+\
+setNodeElementDefinition(T) \
+\
+newNodeDefinition(T)	\
+\
+setListHeadDefinition(T) \
+\
+setListFootDefinition(T) \
+\
+setListSizeDefinition(T) \
 \
 newListDefinition(T) \
 \
@@ -270,19 +388,37 @@ nextNodeDefinition(T) \
 \
 listSizeDefinition(T) \
 \
+emptyListDefinition(T) \
+\
+incListSizeDefinition(T) \
+\
 checkIndexBoundsDefinition(T) \
 \
-clearListDefinition(T) \
+addFirstMutableEmptyDefinition(T) \
 \
-emptyListDefinition(T) \
+addFirstMutableDefinition(T) \
+\
+addFirstEmptyDefinition(T) \
 \
 addFirstDefinition(T) \
 \
 getNodeDefinition(T) \
 \
-addIndexDefinition(T) \
+headListDefinition(T) \
+\
+tailListDefinition(T) \
+\
+copyListDefinition(T) \
+\
+addAfterFootDefinition(T) \
+\
+addAfterDefinition(T) \
+\
+addLastMutableDefinition(T) \
 \
 addLastDefinition(T) \
+\
+addIndexDefinition(T) \
 \
 getElementDefinition(T) \
 \
