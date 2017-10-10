@@ -72,6 +72,23 @@ void applyList(T)(List(T) *list, void (f)(T)) \
 }
 
 
+#define printList(T) printList##T
+#define printListDefinition(T,P) \
+void printList(T)(List(T) *list) \
+{ \
+	Node(T) *current = list->head; \
+	int i; \
+	putchar('['); \
+	for (i = 0; i < listSize(T)(list) - 1; i++) { \
+		printf(P, nodeElement(T)(current)); \
+		printf(", "); \
+		current = nextNode(T)(current); \
+	} \
+	if (current != NULL) printf(P, nodeElement(T)(current)); \
+	puts("]"); \
+}
+
+
 #define projectList(T,U) projectList##T##U
 #define projectListDefinition(T,U) \
 List(U) *projectList(T,U)(List(T) *list, U (f)(T)) \

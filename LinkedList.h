@@ -5,6 +5,7 @@
 #include <stdlib.h>
 #include <stdbool.h>
 #include <execinfo.h>
+#include "debug.h"
 
 
 #define Node(T) Node##T
@@ -39,6 +40,7 @@ Node(T) *newNode(T)(T element, Node(T) *next) \
 List(T) *newList(T)(void) \
 { \
 	List(T) *list = malloc(sizeof(List(T))); \
+	list->head = NULL; \
 	list->size = 0; \
 	return list; \
 }
@@ -57,18 +59,6 @@ T nodeElement(T)(Node(T) *node) \
 Node(T) *nextNode(T)(Node(T) *node) \
 { \
 	return node->next; \
-}
-
-
-void die(const char *message)
-{
-	int size = 10000;
-	void *buffer[size];
-	size = backtrace(buffer, size);
-	fputs(message, stderr);
-	fputc('\n', stderr);
-	backtrace_symbols_fd(buffer, size, 2);
-	exit(1);
 }
 
 
@@ -127,17 +117,12 @@ void addFirst(T)(List(T) *list, T thing) \
 Node(T) *getNode(T)(List(T) *list, int index) \
 { \
 	Node(T) *thing; \
+	int i; \
 	checkIndexBounds(T)(list, index); \
 \
 	thing = list->head; \
 \
-	{ \
-		int i = 0; \
-		while (i < index) { \
-			thing = nextNode(T)(thing); \
-			i++; \
-		} \
-	} \
+	for (i = 0; i < index; i++) thing = nextNode(T)(thing); \
 \
 	return thing; \
 }
@@ -233,25 +218,6 @@ int indexOf(T)(List(T) *list, T thing) \
 	} \
 \
 	return -1; \
-}
-
-
-#define printList(T) printList##T
-#define printListDefinition(T,P) \
-void printList(T)(List(T) *list) \
-{ \
-	Node(T) *current = list->head; \
-	putchar('['); \
-	{ \
-		int i; \
-		for (i = 0; i < listSize(T)(list) - 1; i++) { \
-			printf(P, nodeElement(T)(current)); \
-			printf(", "); \
-			current = nextNode(T)(current); \
-		} \
-	} \
-	if (current != NULL) printf(P, nodeElement(T)(current)); \
-	puts("]"); \
 }
 
 
