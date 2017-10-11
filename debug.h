@@ -2,6 +2,7 @@
 #define DEBUG_H
 
 
+#include <stdio.h>
 #include <execinfo.h>
 #include <signal.h>
 
