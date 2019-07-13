@@ -260,11 +260,11 @@ List(T) *addFirstMutableEmpty(T)(List(T) *list) \
 
 /*
   Adds the given object in front of the given list. Modifies the original list.
-  You should usually use normal addFirst instead.
+  You should usually use the addFirst function instead.
  */
 #define addFirstMutable(T) addFirstMutable##T
 #define addFirstMutableDefinition(T) \
-List(T) *addFirstMutable(T)(List(T) *list, T thing) \
+List(T) *addFirstMutable(T)(List(T) *list, T element) \
 { \
 	return \
 		incListSize(T)( \
@@ -272,13 +272,13 @@ List(T) *addFirstMutable(T)(List(T) *list, T thing) \
 				setListHead(T)( \
 					list, \
 					newNode(T)( \
-						thing, \
+						element, \
 						list->head)))); \
 }
 
 
 /*
-  Checks if the original list is empty and sets the foot equal to the head if it
+  Checks if the original list is empty, and sets the foot equal to the head if it
   is. Called during the addFirst function.
  */
 #define addFirstEmpty(T) addFirstEmpty##T
@@ -296,7 +296,7 @@ List(T) *addFirstEmpty(T)(List(T) *orig, List(T) *list) \
  */
 #define addFirst(T) addFirst##T
 #define addFirstDefinition(T) \
-List(T) *addFirst(T)(List(T) *list, T thing) \
+List(T) *addFirst(T)(List(T) *list, T element) \
 { \
 	return \
 		setListSize(T)( \
@@ -304,7 +304,7 @@ List(T) *addFirst(T)(List(T) *list, T thing) \
 				list, \
 				setListHead(T)( \
 					newList(T)(), \
-					newNode(T)(thing, list->head))), \
+					newNode(T)(element, list->head))), \
 			listSize(T)(list) + 1); \
 }
 
@@ -319,7 +319,7 @@ List(T) *copyList(T)(List(T) *list) \
 	if (emptyList(T)(list)) return newList(T)(); \
 	else return \
 		     addFirst(T)( \
-				     tailList(T)(list), \
+			     copyList(T)(tailList(T)(list)), \
 			     headList(T)(list)); \
 }
 
@@ -342,7 +342,7 @@ List(T) *addAfterFoot(T)(List(T) *list, Node(T) *node) \
  */
 #define addAfter(T) addAfter##T
 #define addAfterDefinition(T) \
-List(T) *addAfter(T)(List(T) *list, Node(T) *node, T thing) \
+List(T) *addAfter(T)(List(T) *list, Node(T) *node, T element) \
 { \
 	return \
 		incListSize(T)( \
@@ -351,7 +351,7 @@ List(T) *addAfter(T)(List(T) *list, Node(T) *node, T thing) \
 				linkNodes(T)( \
 					node, \
 					newNode(T)( \
-						thing, \
+						element, \
 						nextNode(T)(node))))); \
 }
 
@@ -362,10 +362,10 @@ List(T) *addAfter(T)(List(T) *list, Node(T) *node, T thing) \
  */
 #define addLastMutable(T) addLastMutable##T
 #define addLastMutableDefinition(T) \
-List(T) *addLastMutable(T)(List(T) *list, T thing) \
+List(T) *addLastMutable(T)(List(T) *list, T element) \
 { \
-	if (emptyList(T)(list)) return addFirstMutable(T)(list, thing); \
-	else return addAfter(T)(list, list->foot, thing); \
+	if (emptyList(T)(list)) return addFirstMutable(T)(list, element); \
+	else return addAfter(T)(list, list->foot, element); \
 }
 
 
@@ -375,9 +375,9 @@ List(T) *addLastMutable(T)(List(T) *list, T thing) \
  */
 #define addLast(T) addLast##T
 #define addLastDefinition(T) \
-List(T) *addLast(T)(List(T) *list, T thing) \
+List(T) *addLast(T)(List(T) *list, T element) \
 { \
-	return addLastMutable(T)(copyList(T)(list), thing); \
+	return addLastMutable(T)(copyList(T)(list), element); \
 }
 
 
@@ -388,11 +388,11 @@ List(T) *addLast(T)(List(T) *list, T thing) \
  */
 #define addIndex(T) addIndex##T
 #define addIndexDefinition(T) \
-List(T) *addIndex(T)(List(T) *list, int index, T thing) \
+List(T) *addIndex(T)(List(T) *list, int index, T element) \
 { \
-	if (index == 0) return addFirst(T)(list, thing); \
-	else if (index == listSize(T)(list)) return addLast(T)(list, thing); \
-	else return addAfter(T)(copyList(T)(list), getNode(T)(list, index - 1), thing); \
+	if (index == 0) return addFirst(T)(list, element); \
+	else if (index == listSize(T)(list)) return addLast(T)(list, element); \
+	else return addAfter(T)(copyList(T)(list), getNode(T)(list, index - 1), element); \
 }
 
 
@@ -412,11 +412,11 @@ T getElement(T)(List(T) *list, int index) \
  */
 #define setElement(T) setElement##T
 #define setElementDefinition(T) \
-T setElement(T)(List(T) *list, int index, T thing) \
+T setElement(T)(List(T) *list, int index, T element) \
 { \
 	Node(T) *e = getNode(T)(list, index); \
 	T oldElement = nodeElement(T)(e); \
-	e->element = thing; \
+	e->element = element; \
 	return oldElement; \
 }
 
@@ -461,11 +461,11 @@ T removeLast(T)(List(T) *list) \
  */
 #define indexOfAfter(T) indexOfAfter##T
 #define indexOfAfterDefinition(T) \
-int indexOfAfter(T)(List(T) *list, T thing, int index) \
+int indexOfAfter(T)(List(T) *list, T element, int index) \
 { \
-	if (headList(T)(list) == thing) return index; \
+	if (headList(T)(list) == element) return index; \
 	else if (listSize(T)(list) == 1) return -1; \
-	else return indexOfAfter(T)(list, thing, index + 1); \
+	else return indexOfAfter(T)(list, element, index + 1); \
 }
 
 
@@ -475,9 +475,9 @@ int indexOfAfter(T)(List(T) *list, T thing, int index) \
  */
 #define indexOf(T) indexOf##T
 #define indexOfDefinition(T) \
-int indexOf(T)(List(T) *list, T thing) \
+int indexOf(T)(List(T) *list, T element) \
 { \
-	return indexOfAfter(T)(list, thing, 0); \
+	return indexOfAfter(T)(list, element, 0); \
 }
 
 
